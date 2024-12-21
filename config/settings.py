@@ -160,7 +160,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://socialandmusicalchambertrust.onrender.com',
     'https://socailandmusicalchamber.netlify.app'
 ]
-
+SESSION_COOKIE_DOMAIN = 'https://socialandmusicalchambertrust.onrender.com'  # For session cookies to work across subdomains
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:5173",
 # ]
