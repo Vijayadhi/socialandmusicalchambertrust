@@ -154,7 +154,7 @@ JAZZMIN_SETTINGS = {
     "custom_js": "./admin.js"
 }
 
-CSRF_COOKIE_DOMAIN = 'shgs.onrender.com'  # Include the dot for subdomains
+CSRF_COOKIE_DOMAIN = 'https://socialandmusicalchambertrust.onrender.com'  # Include the dot for subdomains
 
 CSRF_TRUSTED_ORIGINS = [
     'https://socialandmusicalchambertrust.onrender.com',
@@ -177,3 +177,6 @@ CSRF_TRUSTED_ORIGINS = [
 # # CSRF_COOKIE_SAMESITE = "None"  # Set to 'None' for cross-site, but 'Lax' is generally good for most cases
 # CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to access the cookie
 # CSRF_COOKIE_SECURE = False  # Set this to True if you're using HTTPS in production
+
+# CSRF_COOKIE_DOMAIN = '.yourdomain.com'  # For cross-subdomain access
+# CSRF_COOKIE_SECURE = True  # For secure cookie transmission over HTTPS
