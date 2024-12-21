@@ -46,9 +46,10 @@ class CustomUserAdmin(UserAdmin):
         fieldsets = super().get_fieldsets(request, obj)
 
         # If the current user is not in the "CustomAdmin" group, remove 'groups' field from fieldsets
-        if request.user.groups.filter(name='CustomAdmin').exists():
+        if not(request.user.groups.filter(name='CustomAdmin').exists()):
             # Modify the permissions fieldset to remove 'groups'
             fieldsets = [
+
                 ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups')}),
             ]
             # fieldsets[1] = })
