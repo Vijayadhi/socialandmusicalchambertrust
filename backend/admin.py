@@ -27,7 +27,7 @@ class CustomUserAdmin(UserAdmin):
     # Default fieldsets
     fieldsets = (
         (None, {'fields': ('email', 'password', 'name', 'mobile_number')}),
-        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser',)}),
+        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser','groups')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
 
@@ -50,7 +50,7 @@ class CustomUserAdmin(UserAdmin):
             # Modify the permissions fieldset to remove 'groups'
             fieldsets = [
 
-                ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups')}),
+                ('Permissions', {'fields': ('is_staff', 'is_active')}),
             ]
             # fieldsets[1] = })
 
