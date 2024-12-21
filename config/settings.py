@@ -154,23 +154,25 @@ JAZZMIN_SETTINGS = {
     "custom_js": "./admin.js"
 }
 
+CSRF_COOKIE_DOMAIN = 'shgs.onrender.com'  # Include the dot for subdomains
+
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173',
+    'https://socialandmusicalchambertrust.onrender.com',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",
+# ]
 # CORS_ALLOW_ALL_ORIGINS = True
 
 # CORS_ALLOW_HEADERS = ['*']
 # CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
 
-CORS_ALLOW_CREDENTIALS = True  # Allow credentials (cookies, etc.)
-SECURE_SSL_REDIRECT = False
-CSRF_COOKIE_PATH = '/'  # Set path if needed
-
-CSRF_COOKIE_NAME = "csrftoken"  # This is the default name for the CSRF cookie
-# CSRF_COOKIE_SAMESITE = "None"  # Set to 'None' for cross-site, but 'Lax' is generally good for most cases
-CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to access the cookie
-CSRF_COOKIE_SECURE = False  # Set this to True if you're using HTTPS in production
+# CORS_ALLOW_CREDENTIALS = True  # Allow credentials (cookies, etc.)
+# SECURE_SSL_REDIRECT = False
+# CSRF_COOKIE_PATH = '/'  # Set path if needed
+#
+# CSRF_COOKIE_NAME = "csrftoken"  # This is the default name for the CSRF cookie
+# # CSRF_COOKIE_SAMESITE = "None"  # Set to 'None' for cross-site, but 'Lax' is generally good for most cases
+# CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to access the cookie
+# CSRF_COOKIE_SECURE = False  # Set this to True if you're using HTTPS in production
