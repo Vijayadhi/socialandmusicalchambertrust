@@ -158,6 +158,7 @@ CSRF_COOKIE_DOMAIN = 'shgs.onrender.com'  # Include the dot for subdomains
 
 CSRF_TRUSTED_ORIGINS = [
     'https://socialandmusicalchambertrust.onrender.com',
+    'https://socailandmusicalchamber.netlify.app'
 ]
 
 # CORS_ALLOWED_ORIGINS = [
