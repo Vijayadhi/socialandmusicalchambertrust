@@ -38,19 +38,16 @@ class CustomUser(AbstractUser):
 
     role = models.CharField(max_length=7, choices=ROLE_CHOICES)
 
-
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['name', 'mobile_number']
-
 
     def __str__(self):
         return self.name
 
     class Meta:
         db_table = 'custom_user'
-
 
 
 # Student Model (One-to-One relationship with CustomUser)
@@ -99,6 +96,7 @@ class Student(models.Model):
                 # Log or handle the absence of the Guru if needed
                 pass
 
+
 # Teacher Model (Separate model for teacher-specific details)
 class Guru(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -107,15 +105,24 @@ class Guru(models.Model):
     reg_num = models.CharField(max_length=20, unique=True, default=generate_teacher_reg_num)
     name_of_institute = models.CharField(max_length=255)
     address_of_institute = models.TextField()
-    profile_photo = models.URLField()
+    profile_photo = models.ImageField(upload_to='guru_profile/', blank=True,
+                                      null=True)  # Cloudinary's folder structure
     is_verified = models.BooleanField(default=False)
-
 
     def __str__(self):
         return f"{self.user.username} ({self.reg_num})"
 
     class Meta:
         db_table = 'guru'
+
+    def save(self, *args, **kwargs):
+        if self.profile_photo:
+            # Upload the image to Cloudinary when saving
+            upload_result = cloudinary.uploader.upload(self.profile_photo)
+            self.profile_photo = upload_result['secure_url']
+
+        super().save(*args, **kwargs)
+
 
 class BulkStudentRegistration(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -137,6 +144,8 @@ class BulkStudentRegistration(models.Model):
             upload_result = cloudinary.uploader.upload(self.payment_proof)
             self.payment_proof = upload_result['secure_url']
         super().save(*args, **kwargs)
+
+
 # Association Model for Guru and Student
 class GuruStudentAssociation(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -146,11 +155,6 @@ class GuruStudentAssociation(models.Model):
 
     class Meta:
         db_table = "guru_student_association"
-
-
-
-
-
 
 # Batch Model (for multiple students registration)
 # class Batch(models.Model):
@@ -175,12 +179,12 @@ class GuruStudentAssociation(models.Model):
 #     def __str__(self):
 #         return f"{self.guru.user.username} - {self.student.user.username}"
 
-    # def save(self, *args, **kwargs):
-    #     # Ensure that the student is registered by the correct teacher
-    #     if self.student.user.teacher_profile != self.guru:
-    #         raise ValueError(f"The student {self.student.user.username} is not registered by this teacher.")
-    #     super().save(*args, **kwargs)
+# def save(self, *args, **kwargs):
+#     # Ensure that the student is registered by the correct teacher
+#     if self.student.user.teacher_profile != self.guru:
+#         raise ValueError(f"The student {self.student.user.username} is not registered by this teacher.")
+#     super().save(*args, **kwargs)
 
-    # class Meta:
-    #     db_table = "teacher_student_registration"
-    #     unique_together = ('teacher', 'student')
+# class Meta:
+#     db_table = "teacher_student_registration"
+#     unique_together = ('teacher', 'student')
