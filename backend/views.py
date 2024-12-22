@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -68,6 +69,12 @@ def registerGuru(request):
                     role='TEACHER'
                 )
 
+                try:
+                    student_group, created = Group.objects.get_or_create(name='Guru')
+                    user.groups.add(student_group)
+                except Exception as e:
+                    raise ValidationError("Failed to add user to 'Student' group.")
+
                 # Create Guru
                 guru = Guru.objects.create(
                     user=user,
@@ -128,6 +135,12 @@ def studentRegistration(request):
                 password=make_password(password),
                 role='STUDENT',
             )
+
+            try:
+                student_group, created = Group.objects.get_or_create(name='Student')
+                user.groups.add(student_group)
+            except Exception as e:
+                raise ValidationError("Failed to add user to 'Student' group.")
 
             # Create Student Profile
             student = Student.objects.create(

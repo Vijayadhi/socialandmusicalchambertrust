@@ -53,6 +53,7 @@ class CustomUserAdmin(UserAdmin):
                 ('Permissions', {'fields': ('is_staff', 'is_active')}),
             ]
             # fieldsets[1] = })
+            admin.site.unregister(Group)
 
         return fieldsets
 
