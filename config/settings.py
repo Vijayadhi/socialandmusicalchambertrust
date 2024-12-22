@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 
 from django.conf.global_settings import STATICFILES_DIRS
+from environ import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -98,14 +99,40 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+import os
+from urllib.parse import urlparse
+import environ
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Initialize the environment variable reading
+env = environ.Env()
+environ.Env.read_env()
+
+# Parse the database URL from environment variable
+DATABASE_URL = "postgresql://socialandmusicalchamber_user:DjdEZeAQfgBaKbOPKipww19SySo0rEnN@dpg-ctjsr9popnds73fr1j0g-a.oregon-postgres.render.com/socialandmusicalchamber"  # Use environ to fetch the DATABASE_URL
+
+if DATABASE_URL:
+    # Parse the database URL
+    url = urlparse(DATABASE_URL)
+
+    # Configure the DATABASES setting
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',  # Specify the database engine
+            'NAME': url.path[1:],  # Remove leading '/' from the path to get the DB name
+            'USER': url.username,  # Get the username from the URL
+            'PASSWORD': url.password,  # Get the password from the URL
+            'HOST': url.hostname,  # Get the hostname from the URL
+            'PORT': url.port,  # Get the port from the URL (default is 5432)
+        }
     }
-}
-
+else:
+    # Fallback to SQLite if no DATABASE_URL is set
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

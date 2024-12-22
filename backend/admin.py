@@ -50,7 +50,7 @@ class CustomUserAdmin(UserAdmin):
             # Modify the permissions fieldset to remove 'groups'
             fieldsets = [
 
-                ('Permissions', {'fields': ('is_staff', 'is_active')}),
+                ('Permissions', {'fields': ('is_staff', 'is_active', )}),
             ]
             # fieldsets[1] = })
             admin.site.unregister(Group)
@@ -68,6 +68,14 @@ class CustomUserAdmin(UserAdmin):
 
         # Otherwise, restrict to the current user's record
         return queryset.filter(email=request.user.email)
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.groups.filter(name="CustomAdmin"):
+            return True
+        """
+        Disable the delete button for all users, effectively hiding the delete functionality.
+        """
+        return False
 
 # admin.site.unregister(Group)
 
@@ -164,6 +172,14 @@ class GuruAdmin(admin.ModelAdmin):
 
         return queryset
 
+    def has_delete_permission(self, request, obj=None):
+        if request.user.groups.filter(name="CustomAdmin"):
+            return True
+        """
+        Disable the delete button for all users, effectively hiding the delete functionality.
+        """
+        return False
+
 # Registering CustomUserAdmin with the admin site
 # admin.site.register(CustomUser, CustomUserAdmin)
 
@@ -189,6 +205,14 @@ class GuruStudentAssociationAdmin(admin.ModelAdmin):
     @admin.display(description='Number of Students')
     def number_of_students(self, obj):
         return obj.students.count()
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.groups.filter(name="CustomAdmin"):
+            return True
+        """
+        Disable the delete button for all users, effectively hiding the delete functionality.
+        """
+        return False
 # admin.site.register(CustomUser, CustomUserAdmin)
 # admin.site.register(TeacherStudentRegistration)
 # admin.site.register(Student, StudentAdmin)
