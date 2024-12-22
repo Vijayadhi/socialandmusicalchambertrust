@@ -207,3 +207,14 @@ CSRF_TRUSTED_ORIGINS = [
 
 # CSRF_COOKIE_DOMAIN = '.yourdomain.com'  # For cross-subdomain access
 # CSRF_COOKIE_SECURE = True  # For secure cookie transmission over HTTPS
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name = "djznsx8sx",
+    api_key = "769148685579493",
+    api_secret = "ZO3v9Je3woIgBwHWpRehHSKWjEk", # Click 'View API Keys' above to copy your API secret
+    secure=True
+)

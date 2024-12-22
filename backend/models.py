@@ -1,5 +1,6 @@
 import uuid
-
+import cloudinary
+import cloudinary.uploader
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from backend.managers import CustomUserManager
@@ -7,7 +8,7 @@ from backend.managers import CustomUserManager
 
 # Function to generate random registration numbers
 def generate_teacher_reg_num():
-    return f"T-{uuid.uuid4().hex[:8].upper()}"
+    return f"TE-{uuid.uuid4().hex[:8].upper()}"
 
 
 def generate_student_reg_num():
@@ -15,7 +16,7 @@ def generate_student_reg_num():
 
 
 def generate_tsreg_num():
-    return f"TSREG-{uuid.uuid4().hex[:8].upper()}"
+    return f"STTREG-{uuid.uuid4().hex[:8].upper()}"
 
 
 # CustomUser Model (Base model for common fields)
@@ -55,23 +56,21 @@ class CustomUser(AbstractUser):
 # Student Model (One-to-One relationship with CustomUser)
 class Student(models.Model):
     id = models.BigAutoField(primary_key=True)
-
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='student_profile')
-
     reg_num = models.CharField(max_length=20, unique=True, default=generate_student_reg_num)
-    dob = models.DateField()
-    grade_studying = models.CharField(max_length=50)
-    father_name = models.CharField(max_length=35)
-    mother_name = models.CharField(max_length=35)
+    dob = models.DateField(null=True, blank=True)
+    grade_studying = models.CharField(max_length=50, null=True, blank=True)
+    father_name = models.CharField(max_length=35, null=True, blank=True)
+    mother_name = models.CharField(max_length=35, null=True, blank=True)
     name_of_guru = models.CharField(max_length=255, null=True, blank=True)
     guru_mobile_number = models.CharField(max_length=10, null=True, blank=True)
     guru_registration_number = models.CharField(max_length=20, null=True, blank=True)
     name_of_institute = models.CharField(max_length=255, null=True, blank=True)
     address_of_institute = models.TextField(null=True, blank=True)
     payment_ref_no = models.CharField(max_length=100, unique=True)
-    payment_proof = models.URLField(unique=True)
+    payment_proof = models.ImageField(upload_to='student_proofs/', blank=True,
+                                      null=True)  # Cloudinary's folder structure
     is_verified = models.BooleanField(default=False)
-
 
     def __str__(self):
         return f"{self.user.username} ({self.reg_num})"
@@ -79,9 +78,13 @@ class Student(models.Model):
     class Meta:
         db_table = 'student'
 
-    # Override save method to add logic for GuruStudentAssociation
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # Save the student object first
+        if self.payment_proof:
+            # Upload the image to Cloudinary when saving
+            upload_result = cloudinary.uploader.upload(self.payment_proof)
+            self.payment_proof = upload_result['secure_url']
+
+        super().save(*args, **kwargs)
 
         if self.guru_registration_number:
             try:
@@ -95,7 +98,6 @@ class Student(models.Model):
             except Guru.DoesNotExist:
                 # Log or handle the absence of the Guru if needed
                 pass
-
 
 # Teacher Model (Separate model for teacher-specific details)
 class Guru(models.Model):
@@ -115,15 +117,39 @@ class Guru(models.Model):
     class Meta:
         db_table = 'guru'
 
+class BulkStudentRegistration(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    guru = models.ForeignKey(Guru, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    reg_num = models.CharField(max_length=20, unique=True, default=generate_tsreg_num)
+    payment_ref_no = models.CharField(max_length=100)
+    payment_proof = models.ImageField(upload_to='bulk_proofs/', blank=True, null=True)  # Cloudinary's folder structure
 
+    def __str__(self):
+        return self.guru.user.email
+
+    class Meta:
+        db_table = "bulk_registration"
+
+    def save(self, *args, **kwargs):
+        if self.payment_proof:
+            # Upload the image to Cloudinary when saving
+            upload_result = cloudinary.uploader.upload(self.payment_proof)
+            self.payment_proof = upload_result['secure_url']
+        super().save(*args, **kwargs)
 # Association Model for Guru and Student
 class GuruStudentAssociation(models.Model):
     id = models.BigAutoField(primary_key=True)
     guru = models.ForeignKey(Guru, on_delete=models.CASCADE)
-    students = models.ManyToManyField(Student, related_name="students")
+    students = models.ManyToManyField(Student, related_name="students", blank=True)
+    group_registered_students = models.ManyToManyField(BulkStudentRegistration, related_name="students", blank=True)
 
     class Meta:
         db_table = "guru_student_association"
+
+
+
+
 
 
 # Batch Model (for multiple students registration)

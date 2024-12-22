@@ -1,169 +1,105 @@
 {% extends "backend/home.html" %}
-
-{% block title%}Guru Registration{% endblock%}
-{% block content %}
-<a href="/backend/studentRegistration">Not Guru? Student Registration here</a>
-{% if messages %}
-<div>
-    {% for message in messages %}
-    <p class="alert alert-{{ message.tags }}">{{ message }}</p>
-    {% endfor %}
-</div>
-{% endif %}
-</div>
-
-
-</header>
-<form id="contact" method="post">
-    {% csrf_token %}
-    <div class="row">
-        <div class="col-lg-6 offset-lg-3">
-
-            <div class="section-heading">
-                <br><br>
-
-                <h2>Guru Registration</h2>
-                <br><br>
-            </div>
-        </div>
-
-        <div class="col-lg-9">
-
-            <div class="row">
-                <div class="col-lg-6">
-                    <fieldset>
-                        <input
-                                type="text"
-                                name="name"
-                                id="name"
-                                placeholder="Name"
-                                value="{{ form.name.value|default:'' }}"
-                                required
-                        />
-                        {% if form.name.errors %}
-                        <span class="text-danger">{{ form.name.errors }}</span>
-                        {% endif %}
-                    </fieldset>
-                </div>
-                <div class="col-lg-6">
-                    <fieldset>
-                        <input
-                                type="text"
-                                name="mobile_number"
-                                id="mobile_number"
-                                placeholder="Contact Number"
-                                value="{{ form.mobile_number.value|default:'' }}"
-                                required
-                        />
-                        {% if form.mobile_number.errors %}
-                        <span class="text-danger">{{ form.mobile_number.errors }}</span>
-                        {% endif %}
-                    </fieldset>
-                </div>
-                <div class="col-lg-6">
-                    <fieldset>
-                        <input
-                                type="email"
-                                name="email"
-                                id="email"
-                                placeholder="Your Email"
-                                value="{{ form.email.value|default:'' }}"
-                                required
-                        />
-                        {% if form.email.errors %}
-                        <span class="text-danger">{{ form.email.errors }}</span>
-                        {% endif %}
-                    </fieldset>
-                </div>
-                <div class="col-lg-6">
-                    <fieldset>
-                        <input
-                                type="url"
-                                name="profile"
-                                id="profile"
-                                placeholder="Profile Photo URL"
-                                value="{{ form.profile.value|default:'' }}"
-                                required
-                        />
-                        {% if form.profile.errors %}
-                        <span class="text-danger">{{ form.profile.errors }}</span>
-                        {% endif %}
-                    </fieldset>
-                </div>
-                <div class="col-lg-6">
-                    <fieldset>
-                        <input
-                                type="password"
-                                name="password"
-                                id="password"
-                                placeholder="Password"
-                                value="{{ form.password.value|default:'' }}"
-                                required
-                        />
-                        {% if form.password.errors %}
-                        <span class="text-danger">{{ form.password.errors }}</span>
-                        {% endif %}
-                    </fieldset>
-                </div>
-                <div class="col-lg-6">
-                    <fieldset>
-                        <input
-                                type="password"
-                                name="confirm_password"
-                                id="confirm_password"
-                                placeholder="Confirm Password"
-                                value="{{ form.confirm_password.value|default:'' }}"
-                                required
-                        />
-                        {% if form.confirm_password.errors %}
-                        <span class="text-danger">{{ form.confirm_password.errors }}</span>
-                        {% endif %}
-                    </fieldset>
-                </div>
-                <div class="col-lg-6">
-                    <fieldset>
-                        <input
-                                type="text"
-                                name="name_of_institute"
-                                id="name_of_institute"
-                                placeholder="Name of Institute"
-                                value="{{ form.name_of_institute.value|default:'' }}"
-                                required
-                        />
-                        {% if form.name_of_institute.errors %}
-                        <span class="text-danger">{{ form.name_of_institute.errors }}</span>
-                        {% endif %}
-                    </fieldset>
-                </div>
-                <div class="col-lg-6">
-                    <fieldset>
-                <textarea
-                        name="address_of_institute"
-                        id="address_of_institute"
-                        placeholder="Address of Institute"
-                        required
-                >{{ form.address_of_institute.value|default:'' }}</textarea>
-                        {% if form.address_of_institute.errors %}
-                        <span class="text-danger">{{ form.address_of_institute.errors }}</span>
-                        {% endif %}
-                    </fieldset>
-                </div>
-                <div class="col-lg-6">
-                    <button type="reset" class="btn btn-danger" style="background: red">
-                        Reset
-                    </button>
-                </div>
-                <div class="col-lg-6">
-                    <button type="submit" class="main-button">
-                        Register
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-
-
+{% block title %}
+    Guru Registration
 {% endblock %}
 
+{% block content %}
 
+<a href="/backend/studentRegistration">Not a Guru? <br> Student Registration here</a>
+<br><br>
+
+<style>
+    .container {
+        margin-top: 30px;
+    }
+
+    .form-group label {
+        font-weight: bold;
+    }
+
+    .form-control-file {
+        margin-top: 5px;
+    }
+
+    .alert {
+        margin-bottom: 15px;
+    }
+</style>
+
+<!-- Display Django Messages -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="container">
+    <form class="border p-4 bg-light rounded" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <h2 class="text-center mb-4">Guru Registration Form</h2>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Guru Name <span class="text-danger">*</span></label>
+                    <input type="text" name="name" id="name" placeholder="Name" required
+                           class="form-control" value="{{ form_data.name|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Your Email <span class="text-danger">*</span></label>
+                    <input type="email" name="email" id="email" placeholder="Your Email" required
+                           class="form-control" value="{{ form_data.email|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Contact Number <span class="text-danger">*</span></label>
+                    <input type="text" name="mobile_number" id="mobile_number" placeholder="Contact Number" required
+                           class="form-control" value="{{ form_data.mobile_number|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Profile Photo <span class="text-danger">*</span></label>
+                    <input type="file" name="profile" class="form-control-file" required>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-6">
+<!--                <div class="form-group">-->
+<!--                    <label>Password <span class="text-danger">*</span></label>-->
+<!--                    <input type="password" name="password" class="form-control" placeholder="Enter Password" required>-->
+<!--                </div>-->
+
+<!--                <div class="form-group">-->
+<!--                    <label>Confirm Password <span class="text-danger">*</span></label>-->
+<!--                    <input type="password" name="confirm_password" class="form-control"-->
+<!--                           placeholder="Confirm Password" required>-->
+<!--                </div>-->
+
+                <div class="form-group">
+                    <label>Institution Name <span class="text-danger">*</span></label>
+                    <input type="text" name="name_of_institute" class="form-control"
+                           placeholder="Enter Institution Name" value="{{ form_data.name_of_institute|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Institution Address <span class="text-danger">*</span></label>
+                    <textarea name="address_of_institute" class="form-control" rows="3"
+                              placeholder="Enter Institution Address">{{ form_data.address_of_institute|default:'' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.4/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}

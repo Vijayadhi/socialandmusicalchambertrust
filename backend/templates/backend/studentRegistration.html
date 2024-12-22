@@ -1,187 +1,122 @@
 {% extends "backend/home.html" %}
-{% block title%}
-Student Registration
-{% endblock%}
+{% block title %}
+    Student Registration
+{% endblock %}
+
 {% block content %}
-<a href="/backend/registerGuru">Not Student? Guru Registration here</a>
+
+<a href="/backend/registerGuru">Not a Student? <br> Guru Registration here</a>
+<br><br>
 
 
-{% if context.success_message %}
-<div class="alert alert-success">{{ context.success_message }}</div>
+<style>
+    .container {
+        margin-top: 30px;
+    }
+    .form-group label {
+        font-weight: bold;
+    }
+    .form-control-file {
+        margin-top: 5px;
+    }
+</style>
+{% if success_message %}
+    <div class="alert alert-success">{{ success_message }} Your Register Number is {{reg_num}}</div>
 {% endif %}
-{% if context.error_message %}
-<div class="alert alert-danger">{{ context.error_message }}</div>
+{% if error_message %}
+    <div class="alert alert-danger">{{ error_message }}</div>
 {% endif %}
 
-<form id="contact" method="post">
-    {% csrf_token %}
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="section-heading">
-                <br><br>
-                <h2>Student Registration</h2>
-                <br><br>
+<div class="container">
+    <form class="border p-4 bg-light" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <h2 class="text-center mb-4">Student Registration Form</h2>
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Student Name <span class="text-danger">*</span></label>
+                    <input type="text" name="name" id="name" placeholder="Name" autocomplete="on" required
+                           class="form-control" value="{{ request.POST.name }}">
+                    {% if context.error_message and 'name' in context.error_message %}
+                        <small class="text-danger">{{ context.error_message.name }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Your Email <span class="text-danger">*</span></label>
+                    <input type="email" name="email" id="email" placeholder="Your Email" required
+                           class="form-control" value="{{ request.POST.email }}">
+                    {% if context.error_message and 'email' in context.error_message %}
+                        <small class="text-danger">{{ context.error_message.email }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Contact Number<span class="text-danger">*</span></label>
+                    <input type="text" name="mobile_number" id="mobile_number" placeholder="Contact Number" required
+                           class="form-control" value="{{ request.POST.mobile_number }}">
+                    {% if context.error_message and 'mobile_number' in context.error_message %}
+                        <small class="text-danger">{{ context.error_message.mobile_number }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Father's Name</label>
+                    <input type="text" name="father_name" class="form-control" placeholder="Enter Father's Name"
+                           value="{{ request.POST.father_name }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Guru Name</label>
+                    <input type="text" name="guru_name" class="form-control" placeholder="Enter Guru Name"
+                           value="{{ request.POST.guru_name }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Guru Registration Number</label>
+                    <input type="text" name="guru_reg_num" class="form-control" placeholder="Enter Guru Registration Number"
+                           value="{{ request.POST.guru_reg_num }}">
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Institution Name</label>
+                    <input type="text" name="name_of_institute" class="form-control" placeholder="Enter Institution Name"
+                           value="{{ request.POST.name_of_institute }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Institution Address</label>
+                    <textarea name="institution_address" class="form-control" rows="3"
+                              placeholder="Enter Institution Address">{{ request.POST.institution_address }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Reference Number <span class="text-danger">*</span></label>
+                    <input type="text" name="payment_ref_number" class="form-control" placeholder="Enter Payment Reference Number" required
+                           value="{{ request.POST.payment_ref_number }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Proof <span class="text-danger">*</span></label>
+                    <input type="file" name="payment_proof" class="form-control-file" required>
+                    {% if context.error_message and 'payment_proof' in context.error_message %}
+                        <small class="text-danger">{{ context.error_message.payment_proof }}</small>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="row">
-        <!-- Student Information - Column 1 -->
-        <div class="col-lg-4">
-            <!-- Name -->
-            <fieldset>
-                <input type="text" name="name" id="name" placeholder="Name" autocomplete="on" required
-                       class="form-control" value="{{ request.POST.name }}">
-                {% if error_message and 'name' in error_message %}
-                <small class="text-danger">{{ error_message.name }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Mobile Number -->
-            <fieldset>
-                <input type="text" name="mobile_number" id="mobile_number" placeholder="Contact Number"
-                       autocomplete="on" required class="form-control" value="{{ request.POST.mobile_number }}">
-                {% if error_message and 'mobile_number' in error_message %}
-                <small class="text-danger">{{ error_message.mobile_number }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Email -->
-            <fieldset>
-                <input type="email" name="email" id="email" placeholder="Your Email" required class="form-control"
-                       value="{{ request.POST.email }}">
-                {% if error_message and 'email' in error_message %}
-                <small class="text-danger">{{ error_message.email }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Date of Birth -->
-            <fieldset>
-                <input type="date" name="dob" id="dob" placeholder="Date of Birth" class="form-control"
-                       value="{{ request.POST.dob }}">
-                {% if error_message and 'dob' in error_message %}
-                <small class="text-danger">{{ error_message.dob }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Guru Name -->
-            <fieldset>
-                <input type="text" name="guru_name" id="guru_name" placeholder="Guru Name" class="form-control"
-                       value="{{ request.POST.guru_name }}">
-                {% if error_message and 'guru_name' in error_message %}
-                <small class="text-danger">{{ error_message.guru_name }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Guru Mobile Number -->
-            <fieldset>
-                <input type="text" name="guru_mobile_number" id="guru_mobile_number" placeholder="Guru Mobile Number"
-                       class="form-control" value="{{ request.POST.guru_mobile_number }}">
-                {% if error_message and 'guru_mobile_number' in error_message %}
-                <small class="text-danger">{{ error_message.guru_mobile_number }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Payment Reference Number -->
-            <fieldset>
-                <input type="text" name="payment_ref_number" id="payment_ref_number"
-                       placeholder="Payment Reference Number" required class="form-control"
-                       value="{{ request.POST.payment_ref_number }}">
-                {% if error_message and 'payment_ref_number' in error_message %}
-                <small class="text-danger">{{ error_message.payment_ref_number }}</small>
-                {% endif %}
-            </fieldset>
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Submit</button>
         </div>
+    </form>
+</div>
 
-        <!-- Additional Details - Column 2 -->
-        <div class="col-lg-4">
-            <!-- Password -->
-            <fieldset>
-                <input type="password" name="password" id="password" placeholder="Password" required
-                       class="form-control" value="{{ request.POST.password }}">
-                {% if error_message and 'password' in error_message %}
-                <small class="text-danger">{{ error_message.password }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Confirm Password -->
-            <fieldset>
-                <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password"
-                       required class="form-control" value="{{ request.POST.confirm_password }}">
-                {% if error_message and 'confirm_password' in error_message %}
-                <small class="text-danger">{{ error_message.confirm_password }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Father Name -->
-            <fieldset>
-                <input type="text" name="father_name" id="father_name" placeholder="Father Name" required
-                       class="form-control" value="{{ request.POST.father_name }}">
-                {% if error_message and 'father_name' in error_message %}
-                <small class="text-danger">{{ error_message.father_name }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Mother Name -->
-            <fieldset>
-                <input type="text" name="mother_name" id="mother_name" placeholder="Mother Name" required
-                       class="form-control" value="{{ request.POST.mother_name }}">
-                {% if error_message and 'mother_name' in error_message %}
-                <small class="text-danger">{{ error_message.mother_name }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Guru Registration Number -->
-            <fieldset>
-                <input type="text" name="guru_reg_num" id="guru_reg_num" placeholder="Guru Registration Number"
-                       class="form-control" value="{{ request.POST.guru_reg_num }}">
-                {% if error_message and 'guru_reg_num' in error_message %}
-                <small class="text-danger">{{ error_message.guru_reg_num }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Name of Institute -->
-            <fieldset>
-                <input type="text" name="name_of_institue" id="name_of_institue" placeholder="Name of Institute"
-                       required class="form-control" value="{{ request.POST.name_of_institue }}">
-                {% if error_message and 'name_of_institue' in error_message %}
-                <small class="text-danger">{{ error_message.name_of_institue }}</small>
-                {% endif %}
-            </fieldset>
-
-            <!-- Payment Proof URL -->
-            <fieldset>
-                <input type="text" name="payment_proof_url" id="payment_proof_url" placeholder="Payment Proof URL"
-                       required class="form-control" value="{{ request.POST.payment_proof_url }}">
-                {% if error_message and 'payment_proof_url' in error_message %}
-                <small class="text-danger">{{ error_message.payment_proof_url }}</small>
-                {% endif %}
-            </fieldset>
-            <button type="reset" class="btn btn-danger" style="background-color:red">Reset</button>
-            <button type="submit" class="btn main-button">Register</button>
-        </div>
-
-        <!-- Guru and Payment Details - Column 3 -->
-        <div class="col-lg-4">
-            <h4>Payment Details</h4>
-            <br>
-            <div class="col-lg-12">
-                <p><strong>Account Name: </strong>Social And Musical ChamberTrust</p>
-                <p><strong>Account Number:</strong> 1250101032961</p>
-                <p><strong>Bank Name:</strong> Canara Bank</p>
-                <p><strong>Branch:</strong> Cuddalore</p>
-
-                <p><strong>IFSC Code:</strong> CNRB0001250</p>
-                <p><strong>UPI ID:</strong> socialandmusicalchambertrustt@okicici</p>
-                <p><strong>Phone Number:</strong> 63690 38785</p>
-            </div>
-            <br>
-<!--            <h4 class="text-center">Scan QR Code for Payment:</h4>-->
-<!--            <br>-->
-<!--            <div class="col-lg-6 text-center">-->
-<!--                <img src="/static/images/qr_code.png" alt="QR Code for Payment" style="width: 200px; height: 200px;">-->
-<!--            </div>-->
-        </div>
-    </div>
-</form>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.4/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 {% endblock %}

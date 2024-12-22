@@ -1,0 +1,191 @@
+{% extends "backend/home.html" %}
+{% block title %}
+Guru Registration
+{% endblock %}
+
+{% block content %}
+<a href="/backend/studentRegistration">Not a Guru? <br> Student Registration here</a>
+<br><br>
+
+<style>
+    .container {
+        margin-top: 30px;
+    }
+
+    .form-group label {
+        font-weight: bold;
+    }
+
+    .form-control-file {
+        margin-top: 5px;
+    }
+
+    .alert {
+        margin-bottom: 15px;
+    }
+
+    .student-details-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 10px;
+    }
+
+    .student-details-row .form-group {
+        flex: 1;
+    }
+
+    .add-student-btn {
+        margin-top: 10px;
+    }
+
+    .remove-student-btn {
+        margin-top: 32px;
+    }
+
+    @media (max-width: 767px) {
+        .student-details-row {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<!-- Display Django Messages -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="container">
+    <form class="border p-4 bg-light rounded" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <h2 class="text-center mb-4">Guru Registration Form</h2>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Guru Reg. Num <span class="text-danger">*</span></label>
+                    <input type="text" name="reg_num" id="reg_num" placeholder="Guru Reg. Num" required
+                           class="form-control" value="{{ form_data.reg_num|default:'' }}">
+                    {% if error_message.reg_num %}
+                        <small class="text-danger">{{ error_message.reg_num }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Contact Number <span class="text-danger">*</span></label>
+                    <input type="text" name="mobile_number" id="mobile_number" placeholder="Contact Number" required
+                           class="form-control" value="{{ form_data.mobile_number|default:'' }}">
+                    {% if error_message.mobile_number %}
+                        <small class="text-danger">{{ error_message.mobile_number }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Guru Email <span class="text-danger">*</span></label>
+                    <input type="email" name="email" id="email" placeholder="Guru Email" required
+                           class="form-control" value="{{ form_data.email|default:'' }}">
+                    {% if error_message.email %}
+                        <small class="text-danger">{{ error_message.email }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Payment Reference Number <span class="text-danger">*</span></label>
+                    <input type="text" name="payment_ref_number" class="form-control"
+                           placeholder="Enter Payment Reference Number" required
+                           value="{{ form_data.payment_ref_number|default:'' }}">
+                    {% if error_message.payment_ref_number %}
+                        <small class="text-danger">{{ error_message.payment_ref_number }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Proof <span class="text-danger">*</span></label>
+                    <input type="file" name="proof" class="form-control-file" required>
+                    {% if error_message.proof %}
+                        <small class="text-danger">{{ error_message.proof }}</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <hr>
+        <h3>Student Details</h3>
+        <br>
+
+        <div id="student-details-container">
+            <div class="student-details-row">
+                <div class="form-group">
+                    <label>Student Name <span class="text-danger">*</span></label>
+                    <input type="text" name="student_name[]" placeholder="Name" required class="form-control">
+                    {% if error_message.name_0 %}
+                        <small class="text-danger">{{ error_message.name_0 }}</small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Student Contact Number <span class="text-danger">*</span></label>
+                    <input type="text" name="student_mobile_number[]" placeholder="Contact Number" required
+                           class="form-control">
+                    {% if error_message.mobile_0 %}
+                        <small class="text-danger">{{ error_message.mobile_0 }}</small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Student Email <span class="text-danger">*</span></label>
+                    <input type="email" name="student_email[]" placeholder="Email" required class="form-control">
+                    {% if error_message.email_0 %}
+                        <small class="text-danger">{{ error_message.email_0 }}</small>
+                    {% endif %}
+                </div>
+                <button type="button" class="btn btn-danger remove-student-btn">Remove</button>
+            </div>
+        </div>
+
+        <button type="button" id="add-student-btn" class="btn btn-success add-student-btn">Add More Students</button>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.4/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#add-student-btn').click(function () {
+            let studentRow = `
+                <div class="student-details-row">
+                    <div class="form-group">
+                        <label>Student Name <span class="text-danger">*</span></label>
+                        <input type="text" name="student_name[]" placeholder="Name" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Student Contact Number <span class="text-danger">*</span></label>
+                        <input type="text" name="student_mobile_number[]" placeholder="Contact Number" required
+                               class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Student Email <span class="text-danger">*</span></label>
+                        <input type="email" name="student_email[]" placeholder="Email" required class="form-control">
+                    </div>
+                    <button type="button" class="btn btn-danger remove-student-btn">Remove</button>
+                </div>
+            `;
+            $('#student-details-container').append(studentRow);
+        });
+
+        $(document).on('click', '.remove-student-btn', function () {
+            $(this).closest('.student-details-row').remove();
+        });
+    });
+</script>
+{% endblock %}
