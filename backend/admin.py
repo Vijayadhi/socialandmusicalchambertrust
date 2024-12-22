@@ -15,6 +15,7 @@ class CustomUserInline(admin.StackedInline):
     can_delete = False
     show_change_link = True  # Allow a link to change the user directly
 
+admin.site.unregister(Group)
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -53,9 +54,9 @@ class CustomUserAdmin(UserAdmin):
                 ('Permissions', {'fields': ('is_staff', 'is_active', )}),
             ]
             # fieldsets[1] = })
-            admin.site.unregister(Group)
 
         return fieldsets
+
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
