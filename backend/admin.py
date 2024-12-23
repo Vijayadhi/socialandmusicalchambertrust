@@ -1,23 +1,64 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
-from backend.models import CustomUser, Guru, GuruStudentAssociation, Student
+from backend.models import CustomUser, Guru, GuruStudentAssociation, Student, BulkStudentRegistration
 
 
 # Register your models here.
 class CustomUserInline(admin.StackedInline):
     model = CustomUser
-    fields = ('email', 'password', 'name', 'mobile_number', 'is_active', )
+    fields = ('email', 'password', 'name', 'mobile_number', 'is_active',)
     extra = 1  # This allows you to add new instances of CustomUser
     readonly_fields = ('email', 'password', 'is_active',)  # Remove 'is_verified' from here
     can_delete = False
     show_change_link = True  # Allow a link to change the user directly
 
+
 admin.site.unregister(Group)
 
-@admin.register(CustomUser)
+
+@admin.register(BulkStudentRegistration)
+class BulkStudentRegistrationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'guru', 'user', 'reg_num', 'payment_ref_no', 'payment_proof_link')
+    list_filter = ('guru', 'payment_ref_no')
+    search_fields = ('guru__user__email', 'user__email', 'reg_num', 'payment_ref_no')
+    readonly_fields = ('reg_num', 'payment_proof')
+    ordering = ('-id',)
+
+    fieldsets = (
+        ('Guru Details', {
+            'fields': ('guru',)
+        }),
+        ('Student Details', {
+            'fields': ('user',)
+        }),
+        ('Payment Details', {
+            'fields': ('reg_num', 'payment_ref_no', 'payment_proof')
+        }),
+    )
+
+    def guru_email(self, obj):
+        return obj.guru.user.email
+
+    guru_email.short_description = 'Guru Email'
+
+    def user_email(self, obj):
+        return obj.user.email
+
+    user_email.short_description = ('Student Email')
+
+    def payment_proof_link(self, obj):
+        if obj.payment_proof:
+            # Just use the existing image URL without modifying it
+            return format_html('<a href="{}" target="_blank">{}</a>', obj.payment_proof, obj.payment_proof)
+        return "-"
+
+    payment_proof_link.short_description = 'Payment Proof'
+@ admin.register(CustomUser)
+
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
     list_display = ('email', 'is_staff', 'is_active', 'date_joined')
@@ -28,7 +69,7 @@ class CustomUserAdmin(UserAdmin):
     # Default fieldsets
     fieldsets = (
         (None, {'fields': ('email', 'password', 'name', 'mobile_number')}),
-        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser','groups')}),
+        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
 
@@ -47,16 +88,15 @@ class CustomUserAdmin(UserAdmin):
         fieldsets = super().get_fieldsets(request, obj)
 
         # If the current user is not in the "CustomAdmin" group, remove 'groups' field from fieldsets
-        if not(request.user.groups.filter(name='CustomAdmin').exists()):
+        if not (request.user.groups.filter(name='CustomAdmin').exists()):
             # Modify the permissions fieldset to remove 'groups'
             fieldsets = [
 
-                ('Permissions', {'fields': ('is_staff', 'is_active', )}),
+                ('Permissions', {'fields': ('is_staff', 'is_active',)}),
             ]
             # fieldsets[1] = })
 
         return fieldsets
-
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -77,6 +117,7 @@ class CustomUserAdmin(UserAdmin):
         Disable the delete button for all users, effectively hiding the delete functionality.
         """
         return False
+
 
 # admin.site.unregister(Group)
 
@@ -181,6 +222,7 @@ class GuruAdmin(admin.ModelAdmin):
         """
         return False
 
+
 # Registering CustomUserAdmin with the admin site
 # admin.site.register(CustomUser, CustomUserAdmin)
 
@@ -205,7 +247,8 @@ class GuruStudentAssociationAdmin(admin.ModelAdmin):
 
     @admin.display(description='Number of Students')
     def number_of_students(self, obj):
-        return obj.students.count()
+        students_count = obj.students.count() + obj.group_registered_students.count()
+        return students_count
 
     def has_delete_permission(self, request, obj=None):
         if request.user.groups.filter(name="CustomAdmin"):

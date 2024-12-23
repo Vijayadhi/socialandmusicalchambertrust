@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Group
+from django.contrib.messages import success
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -168,10 +169,9 @@ def studentRegistration(request):
 
     return render(request, 'backend/studentRegistration.html', context)
 
-
 @transaction.atomic
 def bulkRegistration(request):
-    context = {'form_data': {}, 'error_message': {}}
+    context = {'form_data': {}, 'error_message': {}, 'student_errors': []}
 
     if request.method == 'POST':
         # Extract Guru Details
@@ -179,7 +179,7 @@ def bulkRegistration(request):
         mobile_number = request.POST.get('mobile_number')
         email = request.POST.get('email')
         payment_ref_number = request.POST.get('payment_ref_number')
-        proof = request.FILES.get('proof')
+        proof = request.FILES.get('proof')  # File upload
 
         # Preserve form data in context
         context['form_data'] = {
@@ -189,14 +189,6 @@ def bulkRegistration(request):
             'payment_ref_number': payment_ref_number,
         }
 
-        # Validate Guru details
-        try:
-            guru = Guru.objects.get(reg_num=reg_num)
-        except ObjectDoesNotExist:
-            context['error_message']['guru'] = "Invalid Guru details. Please verify your credentials."
-            return render(request, 'backend/bulkRegistration.html', context)
-
-        # Validate payment details
         if not payment_ref_number:
             context['error_message']['payment_ref_number'] = "Payment reference number is required."
         if not proof:
@@ -205,72 +197,123 @@ def bulkRegistration(request):
         if context['error_message']:
             return render(request, 'backend/bulkRegistration.html', context)
 
-        # Process student details dynamically
-        student_names = request.POST.getlist('student_name[]')
-        student_mobile_numbers = request.POST.getlist('student_mobile_number[]')
-        student_emails = request.POST.getlist('student_email[]')
-
-        print(student_emails)
-
-        if not student_names or not student_mobile_numbers or not student_emails:
-            context['error_message']['students'] = "At least one student must be provided."
-            return render(request, 'backend/bulkRegistration.html', context)
-
+        # Validate Guru Details
         try:
-            students = []
-            for i in range(len(student_names)):
-                student_name = student_names[i]
-                student_mobile = student_mobile_numbers[i]
-                student_email = student_emails[i]
+            guru = Guru.objects.get(reg_num=reg_num)
+            if guru:
+                student_names = request.POST.getlist('student_name[]')
+                student_mobile_numbers = request.POST.getlist('student_mobile_number[]')
+                student_emails = request.POST.getlist('student_email[]')
 
-                if not student_name:
-                    context['error_message'][f'name_{i}'] = f"Student {i + 1}: Name is required."
-                if not student_mobile:
-                    context['error_message'][f'mobile_{i}'] = f"Student {i + 1}: Mobile number is required."
-                if not student_email:
-                    context['error_message'][f'email_{i}'] = f"Student {i + 1}: Email is required."
+                # if not (student_names and student_mobile_numbers and student_emails):
+                #     context['error_message']['students'] = "At least one student must be provided."
+                #     return render(request, 'backend/bulkRegistration.html', context)
 
-                if context['error_message']:
-                    return render(request, 'backend/bulkRegistration.html', context)
+                for index, (student_name, student_mobile, student_email) in enumerate(
+                        zip(student_names, student_mobile_numbers, student_emails)):
 
-                if CustomUser.objects.filter(username=student_email).exists():
-                    context['error_message'][f'email_{i}'] = f"Student {i + 1}: Email already exists."
-                    continue
+                    student_error = {}
 
-                # Create student user
-                user = CustomUser.objects.create_user(
-                    username=student_email,
-                    email=student_email,
-                    password="default_password123"
-                )
-                user.save()
+                    # if not student_name:
+                    #     student_error['name'] = "Student name is required."
+                    # if not student_mobile:
+                    #     student_error['mobile'] = "Student mobile number is required."
+                    # if not student_email:
+                    #     student_error['email'] = "Student email is required."
+                    #
+                    # if CustomUser.objects.filter(email=student_email).exists():
+                    #     student_error['email'] = f"Student email {student_email} already exists."
 
-                # Add user to 'Student' group
-                student_group, created = Group.objects.get_or_create(name='Student')
-                user.groups.add(student_group)
+                    user = CustomUser.objects.create_user(
+                        name=student_name,
+                        email=student_email,
+                        mobile_number=student_mobile,
+                        password="default_password123"
+                    )
+                    user.save()
 
-                # Create Student object
-                student = Student.objects.create(
-                    user=user,
-                    mobile_number=student_mobile,
-                    guru=guru
-                )
-                students.append(student)
 
-            # Add entry in BulkRegistration
-            bulk_registration = BulkStudentRegistration.objects.create(
-                guru=guru,
-                payment_ref_number=payment_ref_number,
-                payment_proof=proof
-            )
-            bulk_registration.students.add(*students)
 
-            messages.success(request, "Group Registration successful.")
-            return redirect('guru_registration')
+                    bulk_registration = BulkStudentRegistration.objects.create(
+                        guru=guru,
+                        user=user,
+                        payment_ref_no=payment_ref_number,
+                        payment_proof=proof
+                    )
 
-        except Exception as e:
-            print(e)
-            context['error_message']['general'] = f"An error occurred: {e}"
+                    student_group, created = Group.objects.get_or_create(name='Student')
+                    user.groups.add(student_group)
+
+                    association, created = GuruStudentAssociation.objects.get_or_create(guru=guru)
+                    association.group_registered_students.add(bulk_registration)
+
+                    messages.success(request, "Group Registration successful.")
+                    print("success")
+
+                    print(student_name, student_mobile, student_email)
+
+        except ObjectDoesNotExist:
+            context['error_message']['guru'] = "Invalid Guru details. Please verify your credentials."
             return render(request, 'backend/bulkRegistration.html', context)
+
+        # # Validate Payment Details
+        #
+        #
+        # # Validate and Process Student Details
+        #
+        #
+        #
+        #
+        # students = []
+        # for index, (student_name, student_mobile, student_email) in enumerate(
+        #         zip(student_names, student_mobile_numbers, student_emails)):
+        #
+        #     # Validate individual student fields
+        #
+        #
+        #     if student_error:
+        #         context['student_errors'].append({
+        #             'index': index + 1,
+        #             'errors': student_error
+        #         })
+        #         continue
+        #
+        #     print(students)
+        #
+        #     # Create Student User and Bulk Registration
+        #     try:
+        #         user = CustomUser.objects.create_user(
+        #             name=student_name,
+        #             email=student_email,
+        #             mobile_number=student_mobile,
+        #             password="default_password123"
+        #         )
+        #         user.save()
+        #
+        #         # Add to 'Student' Group
+        #
+        #         # Create Bulk Registration Entry for each student
+        #
+        #         students.append(user)
+        #
+        #     except Exception as e:
+        #         context['student_errors'].append({
+        #             'index': index + 1,
+        #             'errors': {'general': f"Failed to register student {student_email}: {e}"}
+        #         })
+        #
+        # if not students:
+        #     context['error_message']['general'] = "No valid students could be registered. Please fix errors and try again."
+        #     return render(request, 'backend/bulkRegistration.html', context)
+        #
+        # # Associate students with GuruStudentAssociation
+        # try:
+        #
+        #
+        #     return redirect('guru_registration')
+        #
+        # except Exception as e:
+        #     context['error_message']['general'] = f"An error occurred during final association: {e}"
+        #     return render(request, 'backend/bulkRegistration.html', context)
 
     return render(request, 'backend/bulkRegistration.html', context)

@@ -48,6 +48,7 @@ class CustomUser(AbstractUser):
 
     class Meta:
         db_table = 'custom_user'
+        verbose_name = "All User Registrations"
 
 
 # Student Model (One-to-One relationship with CustomUser)
@@ -150,8 +151,8 @@ class BulkStudentRegistration(models.Model):
 class GuruStudentAssociation(models.Model):
     id = models.BigAutoField(primary_key=True)
     guru = models.ForeignKey(Guru, on_delete=models.CASCADE)
-    students = models.ManyToManyField(Student, related_name="students", blank=True)
-    group_registered_students = models.ManyToManyField(BulkStudentRegistration, related_name="students", blank=True)
+    students = models.ManyToManyField(Student, related_name="students", blank=True, null=True)
+    group_registered_students = models.ManyToManyField(BulkStudentRegistration, related_name="students", blank=True, null=True)
 
     class Meta:
         db_table = "guru_student_association"
